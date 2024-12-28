@@ -1,0 +1,246 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class FoodItem {
+    private String name;
+    private double price;
+
+    // Constructor
+    public FoodItem(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    // Getter for name
+    public String getName() {
+        return name;
+    }
+
+    // Getter for price
+    public double getPrice() {
+        return price;
+    }
+
+    // Display food item details
+    @Override
+    public String toString() {
+        return name + " - $" + price;
+    }
+}
+
+class Order {
+    private int orderId;
+    private Customer customer;
+    private List<FoodItem> items;
+    private String status;
+    private double totalAmount;
+
+    // Constructor
+    public Order(int orderId, Customer customer) {
+        this.orderId = orderId;
+        this.customer = customer;
+        this.items = new ArrayList<>();
+        this.status = "Pending";  // Order status is initially Pending
+        this.totalAmount = 0.0;
+    }
+
+    // Add item to the order
+    public void addItem(FoodItem item) {
+        items.add(item);
+        totalAmount += item.getPrice();
+    }
+
+    // Update the status of the order
+    public void updateStatus(String newStatus) {
+        this.status = newStatus;
+    }
+
+    // Display order details
+    public void displayOrderDetails() {
+        System.out.println("\n--- Order Details ---");
+        System.out.println("Order ID: " + orderId);
+        System.out.println("Customer: " + customer.getName());
+        System.out.println("Items:");
+        for (FoodItem item : items) {
+            System.out.println("- " + item);
+        }
+        System.out.println("Total Amount: $" + totalAmount);
+        System.out.println("Order Status: " + status);
+    }
+
+    // Getter for orderId
+    public int getOrderId() {
+        return orderId;
+    }
+
+    // Getter for status
+    public String getStatus() {
+        return status;
+    }
+}
+
+class Customer {
+    private String name;
+    private String address;
+    private String phoneNumber;
+
+    // Constructor
+    public Customer(String name, String address, String phoneNumber) {
+        this.name = name;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+    }
+
+    // Getter for name
+    public String getName() {
+        return name;
+    }
+
+    // Getter for address
+    public String getAddress() {
+        return address;
+    }
+
+    // Getter for phoneNumber
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    // Display customer details
+    public void displayCustomerDetails() {
+        System.out.println("Customer Name: " + name);
+        System.out.println("Address: " + address);
+        System.out.println("Phone Number: " + phoneNumber);
+    }
+}
+
+class FoodDeliverySystem {
+    private List<FoodItem> menu;
+    private List<Order> orders;
+    private int orderIdCounter;
+
+    // Constructor
+    public FoodDeliverySystem() {
+        menu = new ArrayList<>();
+        orders = new ArrayList<>();
+        orderIdCounter = 1;
+    }
+
+    // Add a food item to the menu
+    public void addFoodItem(String name, double price) {
+        menu.add(new FoodItem(name, price));
+    }
+
+    // Display the menu
+    public void displayMenu() {
+        System.out.println("\n--- Menu ---");
+        for (int i = 0; i < menu.size(); i++) {
+            System.out.println((i + 1) + ". " + menu.get(i));
+        }
+    }
+
+    // Create a new order for a customer
+    public Order createOrder(Customer customer) {
+        Order newOrder = new Order(orderIdCounter++, customer);
+        orders.add(newOrder);
+        return newOrder;
+    }
+
+    // Find an order by order ID
+    public Order findOrderById(int orderId) {
+        for (Order order : orders) {
+            if (order.getOrderId() == orderId) {
+                return order;
+            }
+        }
+        return null;
+    }
+
+    // Update order status
+    public void updateOrderStatus(int orderId, String newStatus) {
+        Order order = findOrderById(orderId);
+        if (order != null) {
+            order.updateStatus(newStatus);
+        } else {
+            System.out.println("Order not found!");
+        }
+    }
+
+    // Getter for menu
+    public List<FoodItem> getMenu() {
+        return menu;
+    }
+}
+
+public class Main {
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        FoodDeliverySystem system = new FoodDeliverySystem();
+
+        // Adding sample food items to the menu
+        system.addFoodItem("Pizza", 12.99);
+        system.addFoodItem("Burger", 8.49);
+        system.addFoodItem("Pasta", 10.99);
+        system.addFoodItem("Salad", 5.99);
+        system.addFoodItem("Soda", 1.99);
+
+        // Customer inputs
+        System.out.print("Enter your name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter your address: ");
+        String address = scanner.nextLine();
+        System.out.print("Enter your phone number: ");
+        String phoneNumber = scanner.nextLine();
+
+        Customer customer = new Customer(name, address, phoneNumber);
+
+        // Creating an order for the customer
+        Order order = system.createOrder(customer);
+
+        // Display menu and allow the customer to place an order
+        system.displayMenu();
+        while (true) {
+            System.out.print("\nEnter the number of the food item to add to your order (or 'done' to finish): ");
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("done")) {
+                break;
+            }
+
+            try {
+                int foodIndex = Integer.parseInt(input) - 1;
+                if (foodIndex >= 0 && foodIndex < system.getMenu().size()) {
+                    FoodItem selectedItem = system.getMenu().get(foodIndex);
+                    order.addItem(selectedItem);
+                    System.out.println(selectedItem.getName() + " has been added to your order.");
+                } else {
+                    System.out.println("Invalid item number.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number or 'done'.");
+            }
+        }
+
+        // Display order details
+        order.displayOrderDetails();
+
+        // Update order status
+        System.out.print("\nEnter order ID to update status (or 'exit' to quit): ");
+        String input = scanner.nextLine();
+        if (!input.equalsIgnoreCase("exit")) {
+            try {
+                int orderId = Integer.parseInt(input);
+                System.out.print("Enter new order status (e.g., 'Preparing', 'Delivered'): ");
+                String newStatus = scanner.nextLine();
+                system.updateOrderStatus(orderId, newStatus);
+                System.out.println("Order status updated.");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid order ID.");
+            }
+        }
+
+        // Display updated order details
+        order.displayOrderDetails();
+    }
+}
